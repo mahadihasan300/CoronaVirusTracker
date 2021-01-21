@@ -29,4 +29,13 @@ public class LocationStats {
     public void setLastTotalCases(int lastTotalCases) {
         this.lastTotalCases = lastTotalCases;
     }
+
+    @Override
+    public String toString() {
+        return "LocationStats{" +
+                "state='" + state + '\'' +
+                ", country='" + country + '\'' +
+                ", lastTotalCases=" + lastTotalCases +
+                '}';
+    }
 }

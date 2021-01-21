@@ -1,6 +1,7 @@
 package com.example.coronavirustracker.service;
 
 import ch.qos.logback.core.net.SyslogOutputStream;
+import com.example.coronavirustracker.models.LocationStats;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,15 +15,25 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.sql.SQLOutput;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class CoronaVirusDataService {
 
     private static String VIRUS_DATA_URL = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv";
 
+    private List<LocationStats> allStats = new ArrayList<>();
+
+    public List<LocationStats> getAllStats() {
+        return allStats;
+    }
+
     @PostConstruct // This annotation will execute when program start
     @Scheduled(cron = "* * 1 * * *") // This will execute how many time it will execute
     public void fetchVirusData() throws IOException, InterruptedException {
+
+        List<LocationStats> newStats = new ArrayList<>();
 
         HttpClient client = HttpClient.newHttpClient();
 
@@ -41,9 +52,19 @@ public class CoronaVirusDataService {
         //Parsing CSV
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(csvBodyReader);
         for (CSVRecord record : records) {
-            String state = record.get("Province/State");
-            System.out.println(state);
+
+            LocationStats locationStat = new LocationStats();
+            locationStat.setState(record.get("Province/State"));
+            locationStat.setCountry(record.get("Country/Region"));
+            locationStat.setLastTotalCases(Integer.parseInt(record.get(record.size() -1)));
+
+            // System.out.println(locationStat);
+            newStats.add(locationStat);
+
+//            String state = record.get("Province/State");
+//            System.out.println(state);
 
         }
+            this.allStats = newStats;
     }
 }
